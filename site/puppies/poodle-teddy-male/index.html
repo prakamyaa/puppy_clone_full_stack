@@ -1,6 +1,8 @@
 <!DOCTYPE html><html lang="en" class="Veu4Sq_variable hpvSLW_variable _91XIoq_variable"><head><meta charSet="utf-8"/><script id="tp-static-nav">(function () {
   function noop() { }
   var EP = '/api/enquiry';
+  var WA_NUM = '918858068368';
+
   function hget(hd, key) {
     if (!hd) return null;
     try {
@@ -20,6 +22,42 @@
     } catch (e) { }
     return null;
   }
+
+  function getFormData(body) {
+    var data = {};
+    try {
+      if (typeof FormData !== 'undefined' && body instanceof FormData) {
+        body.forEach(function (v, k) {
+          var name = k.replace(/^_\d+_/, '');
+          if (name !== '0' && name !== '1') data[name] = v;
+        });
+      } else if (typeof body === 'string') {
+        body.split('&').forEach(function (p) {
+          var pair = p.split('=');
+          if (pair.length === 2) {
+            var k = decodeURIComponent(pair[0]).replace(/^_\d+_/, '');
+            var v = decodeURIComponent(pair[1]);
+            if (k !== '0' && k !== '1') data[k] = v;
+          }
+        });
+      }
+    } catch (e) { }
+    return data;
+  }
+
+  function triggerWA(fields) {
+    var text = "Hi TeddyPups! I'm interested in knowing more.\n\n" +
+      "Name: " + (fields.name || '') + "\n" +
+      "Phone: " + (fields.phone || '') + "\n" +
+      (fields.email ? "Email: " + fields.email + "\n" : "") +
+      (fields.area ? "Area: " + fields.area + "\n" : "") +
+      (fields.puppyId ? "Puppy: " + fields.puppyId + "\n" : "") +
+      "\nMessage:\n" + (fields.message || '');
+
+    var url = "https://wa.me/" + WA_NUM + "?text=" + encodeURIComponent(text);
+    window.open(url, '_blank');
+  }
+
   var _nx;
   try {
     Object.defineProperty(window, 'next', {
@@ -39,6 +77,7 @@
       }
     });
   } catch (e) { }
+
   document.addEventListener('click', function (e) {
     if (e.defaultPrevented) return;
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -52,6 +91,7 @@
     e.stopPropagation();
     window.location.assign(h);
   }, true);
+
   var _f = window.fetch;
   if (_f) {
     window.fetch = function (input, init) {
@@ -59,24 +99,34 @@
         var u = typeof input === 'string' ? input : (input && input.url) || '';
         var hd = init && init.headers;
         if (!hd && typeof Request !== 'undefined' && input instanceof Request) hd = input.headers;
+
         if (String(u).indexOf('_rsc=') !== -1) return new Promise(noop);
         if (hget(hd, 'next-router-prefetch') != null || hget(hd, 'next-router-segment-prefetch') != null) {
           return new Promise(noop);
         }
+
         if (hget(hd, 'next-action') != null) {
+          var fields = getFormData(init && init.body);
           var oi = init ? Object.assign({}, init) : {};
           oi.cache = 'no-store';
-          if (typeof input === 'string') {
-            return _f.call(this, EP, oi);
-          }
-          if (typeof Request !== 'undefined' && input instanceof Request) {
-            try { return _f.call(this, new Request(EP, input), oi); } catch (e2) { }
-          }
+
+          var target = typeof input === 'string' ? EP : (typeof Request !== 'undefined' && input instanceof Request ? new Request(EP, input) : EP);
+
+          return _f.call(this, target, oi).then(function (res) {
+            var clone = res.clone();
+            clone.text().then(function (text) {
+              if (text.indexOf('"ok":true') !== -1) {
+                triggerWA(fields);
+              }
+            }).catch(noop);
+            return res;
+          });
         }
       } catch (_e) { }
       return _f.apply(this, arguments);
     };
   }
+
   if (window.XMLHttpRequest) {
     var _xo = XMLHttpRequest.prototype.open;
     var _xs = XMLHttpRequest.prototype.send;

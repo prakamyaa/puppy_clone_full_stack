@@ -1,0 +1,13 @@
+# Mirroring / scraping tooling and raw dumps - not part of the deploy
+_work/
+_DataURI/
+.trae-html-share-packages/
+.trae/
+
+# Original broken download
+puppy.instabizweb.com/
+
+# Tooling
+.vercel
+node_modules/
+*.log

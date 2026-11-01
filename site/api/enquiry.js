@@ -152,12 +152,14 @@ function renderHtml(e, page) {
     '</div>';
 }
 
+// Where enquiries are sent. Override with ENQUIRY_TO_EMAIL if it ever changes.
+const DEFAULT_TO_EMAIL = 'prakamyatripathi3@gmail.com';
+
 async function deliver(enquiry, page) {
   const key = process.env.RESEND_API_KEY;
-  const to = process.env.ENQUIRY_TO_EMAIL;
-  if (!key || !to) {
-    console.log('[enquiry] RESEND_API_KEY/ENQUIRY_TO_EMAIL not set, enquiry not emailed:',
-      JSON.stringify(enquiry));
+  const to = process.env.ENQUIRY_TO_EMAIL || DEFAULT_TO_EMAIL;
+  if (!key) {
+    console.log('[enquiry] RESEND_API_KEY not set, enquiry not emailed:', JSON.stringify(enquiry));
     return;
   }
   const from = process.env.ENQUIRY_FROM_EMAIL || 'TeddyPups Website <onboarding@resend.dev>';

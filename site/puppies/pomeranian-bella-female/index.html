@@ -64,12 +64,14 @@
           return new Promise(noop);
         }
         if (hget(hd, 'next-action') != null) {
+          var oi = init ? Object.assign({}, init) : {};
+          oi.cache = 'no-store';
           if (typeof input === 'string') {
-            input = EP;
-          } else if (typeof Request !== 'undefined' && input instanceof Request) {
-            try { input = new Request(EP, input); } catch (e2) { input = EP; }
+            return _f.call(this, EP, oi);
           }
-          init = init ? Object.assign({}, init, { cache: 'no-store' }) : { cache: 'no-store' };
+          if (typeof Request !== 'undefined' && input instanceof Request) {
+            try { return _f.call(this, new Request(EP, input), oi); } catch (e2) { }
+          }
         }
       } catch (_e) { }
       return _f.apply(this, arguments);
